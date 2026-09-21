@@ -1,0 +1,26 @@
+# 1. Infra (you already have these; redis is running on your host)
+  docker compose up -d mosquitto postgres qdrant
+
+  # 2. Content load — re-run whenever seed_exhibits.json changes.
+  #    A full run also PRUNES exhibits that are no longer in the seed file.
+  .venv/bin/python scripts/ingest_exhibits.py
+
+  # 3. Start the three services (separate terminals, or background with &)
+  .venv/bin/python services/beacon_service/main.py
+  .venv/bin/python services/qa_service/main.py
+  .venv/bin/python services/vision_service/main.py
+
+  # 4a. Quick automated check (infra + beacon E2E)
+  .venv/bin/python scripts/health_check.py --e2e
+
+  # 4b. Interactive walk-through — the intended UX
+  .venv/bin/python scripts/simulate_device.py
+  #     menu lets you: trigger a beacon, ask a question, "take" a photo
+  #     (the exhibit list is read straight from data/exhibits/seed_exhibits.json)
+
+  # 5. Inspect persisted tour history
+  docker exec -it museum-postgres psql -U museum -d museum_tour \
+    -c "SELECT session_id, device_id, exhibits_visited, last_active FROM 
+  device_sessions;"
+
+

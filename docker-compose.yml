@@ -1,0 +1,135 @@
+version: "3.9"
+
+# Museum Tour System — Ambedkar Demo Stack
+# Starts all infrastructure + backend services.
+# Run: docker-compose up -d
+# Then: python scripts/ingest_exhibits.py
+# Then: python scripts/simulate_device.py
+
+services:
+
+  # ── Infrastructure ─────────────────────────────────────────────────────────
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: museum-mqtt
+    ports:
+      - "1883:1883"       # plain MQTT (dev only)
+      - "9001:9001"       # WebSocket (optional)
+    volumes:
+      - ./broker/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      # - ./broker/passwords:/mosquitto/config/passwords   # (LAN dev: anonymous — see mosquitto.conf)
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: museum-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-museum_tour}
+      POSTGRES_USER: ${POSTGRES_USER:-museum}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d   # auto-runs on first start
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-museum}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: museum-redis
+    command: >
+      redis-server
+      ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.9.2
+    container_name: museum-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"   # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+    # No healthcheck: the qdrant image has no curl/wget, so an HTTP healthcheck
+    # never passes and would wedge any dependent with condition: service_healthy.
+
+  # ── Backend Services ───────────────────────────────────────────────────────
+
+  beacon_service:
+    build:
+      context: ./services
+      dockerfile: beacon_service/Dockerfile
+    container_name: museum-beacon-service
+    env_file: .env
+    environment:
+      MQTT_BROKER_HOST: mosquitto
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  qa_service:
+    build:
+      context: ./services
+      dockerfile: qa_service/Dockerfile
+    container_name: museum-qa-service
+    env_file: .env
+    environment:
+      MQTT_BROKER_HOST: mosquitto
+      REDIS_HOST: redis
+      QDRANT_HOST: qdrant
+    depends_on:
+      mosquitto:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started   # qdrant has no usable healthcheck (no curl in image)
+    restart: unless-stopped
+
+  vision_service:
+    build:
+      context: ./services
+      dockerfile: vision_service/Dockerfile
+    container_name: museum-vision-service
+    env_file: .env
+    environment:
+      MQTT_BROKER_HOST: mosquitto
+      REDIS_HOST: redis
+    depends_on:
+      mosquitto:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:
+  pg_data:
+  redis_data:
+  qdrant_data:

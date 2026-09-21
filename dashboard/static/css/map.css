@@ -1,0 +1,279 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   map.css — the live floor plan.
+
+   Everything is plain SVG driven by map.js. Colors come from tokens so the
+   plan reads correctly in both themes; nothing here hardcodes a hex.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.map-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  background:
+    radial-gradient(120% 90% at 50% 0%,
+      color-mix(in srgb, var(--accent) 7%, transparent), transparent 62%),
+    var(--bg-sunken);
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+.map-stage.is-panning { cursor: grabbing; }
+
+.map-stage svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+}
+
+/* ── Static plan ──────────────────────────────────────────────────────── */
+
+.fp-grid line { stroke: var(--border); stroke-width: 0.7; opacity: 0.45; }
+.fp-grid line.major { stroke-width: 1; opacity: 0.75; }
+
+.fp-wall {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 5;
+  stroke-linecap: square;
+}
+.fp-wall-fill { fill: color-mix(in srgb, var(--bg-surface) 55%, transparent); stroke: none; }
+
+.fp-shelf {
+  fill: var(--bg-elevated);
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+  rx: 4;
+}
+.fp-shelf-hatch { fill: url(#hatch); stroke: none; rx: 4; }
+
+.fp-room {
+  fill: color-mix(in srgb, var(--accent) 5%, transparent);
+  stroke: var(--border);
+  stroke-width: 1.2;
+  stroke-dasharray: 5 4;
+  rx: 8;
+}
+.fp-desk { fill: var(--bg-hover); stroke: var(--border-strong); stroke-width: 1.2; rx: 5; }
+.fp-table { fill: none; stroke: var(--border-strong); stroke-width: 1.2; }
+
+.fp-zone-label {
+  fill: var(--fg-muted);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-anchor: middle;
+}
+.fp-zone-sub {
+  fill: var(--fg-subtle);
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-anchor: middle;
+}
+.fp-room-label {
+  fill: var(--fg-subtle);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-anchor: middle;
+}
+
+.fp-walk {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.4;
+  stroke-dasharray: 3 7;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+.fp-entrance {
+  fill: none;
+  stroke: var(--ok);
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+.fp-entrance-label {
+  fill: var(--ok);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-anchor: middle;
+}
+
+/* ── Beacons ──────────────────────────────────────────────────────────── */
+
+.bc { cursor: default; }
+.bc-halo {
+  fill: color-mix(in srgb, var(--ch-ble) 16%, transparent);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.bc-core {
+  fill: var(--bg-surface);
+  stroke: var(--ch-ble);
+  stroke-width: 2;
+  transition: fill 0.3s, r 0.3s;
+}
+.bc-glyph { fill: var(--ch-ble); transition: fill 0.3s; }
+.bc-name {
+  fill: var(--fg-subtle);
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 500;
+  transition: fill 0.3s;
+  paint-order: stroke;
+  stroke: var(--bg-sunken);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.bc.is-active .bc-halo { opacity: 1; }
+.bc.is-active .bc-core { fill: var(--ch-ble); }
+.bc.is-active .bc-glyph { fill: var(--bg-surface); }
+.bc.is-active .bc-name { fill: var(--fg); font-weight: 650; }
+
+/* Expanding rings on the beacon the device is currently sitting at. */
+.bc-ping {
+  fill: none;
+  stroke: var(--ch-ble);
+  stroke-width: 1.6;
+  opacity: 0;
+}
+.bc.is-active .bc-ping { animation: ping 2.6s ease-out infinite; }
+.bc.is-active .bc-ping:nth-of-type(2) { animation-delay: 0.87s; }
+.bc.is-active .bc-ping:nth-of-type(3) { animation-delay: 1.74s; }
+
+@keyframes ping {
+  0%   { r: 9;  opacity: 0.6; }
+  100% { r: 46; opacity: 0; }
+}
+
+/* ── Device marker ────────────────────────────────────────────────────── */
+
+.dev-accuracy {
+  fill: color-mix(in srgb, var(--accent) 13%, transparent);
+  stroke: color-mix(in srgb, var(--accent) 55%, transparent);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+  transition: r 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.dev-accuracy.is-sim {
+  fill: color-mix(in srgb, var(--warn) 11%, transparent);
+  stroke: color-mix(in srgb, var(--warn) 50%, transparent);
+}
+
+.dev-heading { fill: var(--accent); opacity: 0.4; }
+.dev-heading.is-sim { fill: var(--warn); }
+
+.dev-glow { fill: var(--accent); opacity: 0.22; animation: dev-breathe 2.8s ease-in-out infinite; }
+.dev-glow.is-sim { fill: var(--warn); }
+
+.dev-core { fill: var(--accent); stroke: #fff; stroke-width: 2.5; }
+.dev-core.is-sim { fill: var(--warn); }
+
+@keyframes dev-breathe {
+  50% { opacity: 0.06; }
+}
+
+.dev-label-bg {
+  fill: var(--bg-surface);
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  rx: 5;
+}
+.dev-label {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.dev-trail {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.4;
+}
+.dev-trail.is-sim { stroke: var(--warn); }
+.map-stage.no-trail .dev-trail { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dev-glow, .bc.is-active .bc-ping { animation: none; }
+  .dev-glow { opacity: 0.16; }
+}
+
+/* ── Chrome: scale bar, compass ───────────────────────────────────────── */
+
+.fp-scale line, .fp-scale path { stroke: var(--fg-subtle); stroke-width: 1.4; fill: none; }
+.fp-scale text,
+.fp-compass text {
+  fill: var(--fg-subtle);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+.fp-compass circle { fill: var(--bg-surface); stroke: var(--border); stroke-width: 1; opacity: 0.8; }
+.fp-compass path { fill: var(--fg-muted); }
+
+/* ── Overlays ─────────────────────────────────────────────────────────── */
+
+.map-ctl {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 5px;
+}
+.map-ctl button {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.map-ctl button:hover { background: var(--bg-hover); color: var(--fg); }
+.map-ctl button[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.map-ctl button svg { width: 13px; height: 13px; }
+
+.map-readout,
+.map-stamp {
+  position: absolute;
+  bottom: 10px;
+  padding: 5px 9px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.map-readout { left: 10px; }
+.map-readout .k { color: var(--fg-subtle); }
+.map-readout .v { color: var(--fg); }
+.map-stamp { right: 10px; }

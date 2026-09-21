@@ -1,0 +1,115 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   tokens.css — the whole palette, type scale and shape language.
+   Dark is the default (this is an ops surface); [data-theme="light"] on <html>
+   swaps it. Nothing below this file should contain a raw hex value.
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: dark;
+
+  /* Surfaces ------------------------------------------------------------- */
+  --bg-base:      #0b0f14;   /* page */
+  --bg-surface:   #111720;   /* cards — the validated chart surface */
+  --bg-elevated:  #18202c;   /* card headers, inputs, chips */
+  --bg-hover:     #1e2835;
+  --bg-sunken:    #080c11;   /* map floor, code wells */
+  --border:       #222d3b;
+  --border-strong:#33415a;
+
+  /* Ink ------------------------------------------------------------------ */
+  --fg:        #e8eef5;
+  --fg-muted:  #93a3b8;
+  --fg-subtle: #5f7085;
+
+  /* Brand + status ------------------------------------------------------- */
+  --accent:      #3987e5;
+  --accent-ink:  #ffffff;
+  --accent-soft: rgba(57, 135, 229, 0.15);
+  --ok:      #199e70;
+  --ok-soft: rgba(25, 158, 112, 0.15);
+  --warn:      #c98500;
+  --warn-soft: rgba(201, 133, 0, 0.15);
+  --danger:      #e5484d;
+  --danger-soft: rgba(229, 72, 77, 0.15);
+
+  /* Channel colors — one hue per MQTT stream, used for KPI tiles, sparklines,
+     feed rails and map markers so a color means the same thing everywhere.
+     Taken from the dataviz reference palette (slots 1/3/4/7/5) and validated
+     as a 5-slot categorical set in this display order against --bg-surface:
+     all checks PASS, worst adjacent CVD dE 8.4. Do not reorder or re-step
+     without re-running scripts/validate_palette.js. */
+  --ch-image:      #3987e5;  /* camera   */
+  --ch-generated:  #199e70;  /* TTS answer */
+  --ch-transcript: #c98500;  /* speech-to-text */
+  --ch-ble:        #9085e9;  /* beacon   */
+  --ch-audio:      #d55181;  /* audio clip */
+
+  /* Shape ---------------------------------------------------------------- */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.5);
+
+  /* Type ----------------------------------------------------------------- */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono",
+               Menlo, Consolas, monospace;
+
+  --text-2xs: 10px;
+  --text-xs:  11px;
+  --text-sm:  12px;
+  --text-md:  13px;
+  --text-lg:  15px;
+  --text-xl:  18px;
+  --text-2xl: 26px;
+
+  /* Layout --------------------------------------------------------------- */
+  --sidebar-w: 232px;
+  --topbar-h: 56px;
+  --gap: 14px;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-base:      #f5f7fa;
+  --bg-surface:   #ffffff;
+  --bg-elevated:  #f8fafc;
+  --bg-hover:     #eef2f7;
+  --bg-sunken:    #f0f3f8;
+  --border:       #e3e8ef;
+  --border-strong:#cbd5e1;
+
+  --fg:        #0f172a;
+  --fg-muted:  #55637a;
+  --fg-subtle: #8494ab;
+
+  --accent:      #2a78d6;
+  --accent-ink:  #ffffff;
+  --accent-soft: rgba(42, 120, 214, 0.12);
+  --ok:      #0f8a5f;
+  --ok-soft: rgba(15, 138, 95, 0.12);
+  --warn:      #b26b00;
+  --warn-soft: rgba(178, 107, 0, 0.12);
+  --danger:      #cc2e33;
+  --danger-soft: rgba(204, 46, 51, 0.12);
+
+  /* Light steps of the same five hues. Three of them (generated, transcript,
+     audio) sit under 3:1 on white, so the dataviz relief rule applies: every
+     KPI tile and feed row carries a visible text label in ink, never color
+     alone. Keep it that way. */
+  --ch-image:      #2a78d6;
+  --ch-generated:  #1baf7a;
+  --ch-transcript: #eda100;
+  --ch-ble:        #4a3aa7;
+  --ch-audio:      #e87ba4;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 18px 48px rgba(15, 23, 42, 0.16);
+}

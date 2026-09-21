@@ -1,0 +1,22 @@
+# Secrets — never commit (use .env.example as the template)
+.env
+.env.*
+!.env.example
+
+# Python environments and build artifacts
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# OS / editor
+.DS_Store
+
+# Runtime logs (contain local paths, IPs, user queries)
+*.out
+nohup.out
+*.log
+
+# Local-only files
+device.tar.gz
+how_to.txt

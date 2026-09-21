@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Museum Tour — Operations</title>
+
+  <!-- Set the theme before first paint so a light-mode reload never flashes dark. -->
+  <script>
+    try {
+      var t = localStorage.getItem("mt.theme");
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch (e) { /* private mode: keep the dark default */ }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
+</head>
+<body>
+
+<!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/>
+      </svg>
+    </span>
+    <span class="brand-text">
+      <strong>Museum Tour</strong>
+      <span>Operations</span>
+    </span>
+  </div>
+
+  <nav class="nav" id="nav">
+    <div class="nav-label">Monitor</div>
+
+    <button class="nav-item" data-nav="overview" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/>
+        <rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>
+      </svg>
+      <span>Overview</span>
+    </button>
+
+    <button class="nav-item" data-nav="map">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+      </svg>
+      <span>Live map</span>
+    </button>
+
+    <div class="nav-label">Streams</div>
+
+    <button class="nav-item" data-nav="media">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+      <span>Captures</span>
+      <em class="nav-count" data-count="image">0</em>
+    </button>
+
+    <button class="nav-item" data-nav="voice">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4"/>
+      </svg>
+      <span>Voice &amp; answers</span>
+      <em class="nav-count" data-count="transcript">0</em>
+    </button>
+
+    <button class="nav-item" data-nav="beacons">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="2"/>
+        <path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 16.24a6 6 0 0 1 0-8.49"/>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>
+      </svg>
+      <span>Beacons</span>
+      <em class="nav-count" data-count="ble">0</em>
+    </button>
+
+    <button class="nav-item" data-nav="feed">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+      </svg>
+      <span>Event log</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="device-chip">
+      <span class="dot" id="dev-dot" aria-hidden="true"></span>
+      <span class="meta">
+        <strong id="dev-name">no device</strong>
+        <span id="dev-sub">awaiting telemetry</span>
+      </span>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Top bar ─────────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="crumbs">
+    <span id="crumb-venue">museum</span>
+    <span class="sep">/</span>
+    <b id="crumb-view">Overview</b>
+  </div>
+
+  <span class="spacer"></span>
+
+  <span class="pill" id="conn-pill">
+    <span class="dot" id="conn-dot" aria-hidden="true"></span>
+    <span id="conn-label">connecting…</span>
+    <span class="mono" id="conn-broker"></span>
+  </span>
+
+  <select class="picker" id="device-picker" aria-label="Device">
+    <option value="">all devices</option>
+  </select>
+
+  <button class="icon-btn" id="theme-btn" type="button"
+          aria-label="Toggle colour theme" title="Toggle colour theme">
+    <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+    </svg>
+  </button>
+</header>
+
+<!-- ── Workspace ───────────────────────────────────────────────────────── -->
+<main id="workspace" data-view="overview">
+
+  <!-- KPI row -->
+  <section class="kpi-row" data-section="kpi" aria-label="Traffic summary">
+    <article class="stat" data-stat="image" style="--ch: var(--ch-image)">
+      <div class="stat-top"><span class="swatch"></span><h3>Camera captures</h3></div>
+      <div class="stat-row">
+        <span class="stat-value" data-value>0</span>
+        <span class="stat-delta" data-delta>none in 60s</span>
+      </div>
+      <svg class="spark" data-spark viewBox="0 0 240 34" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </article>
+
+    <article class="stat" data-stat="generated" style="--ch: var(--ch-generated)">
+      <div class="stat-top"><span class="swatch"></span><h3>Generated answers</h3></div>
+      <div class="stat-row">
+        <span class="stat-value" data-value>0</span>
+        <span class="stat-delta" data-delta>none in 60s</span>
+      </div>
+      <svg class="spark" data-spark viewBox="0 0 240 34" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </article>
+
+    <article class="stat" data-stat="transcript" style="--ch: var(--ch-transcript)">
+      <div class="stat-top"><span class="swatch"></span><h3>Transcriptions</h3></div>
+      <div class="stat-row">
+        <span class="stat-value" data-value>0</span>
+        <span class="stat-delta" data-delta>none in 60s</span>
+      </div>
+      <svg class="spark" data-spark viewBox="0 0 240 34" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </article>
+
+    <article class="stat" data-stat="ble" style="--ch: var(--ch-ble)">
+      <div class="stat-top"><span class="swatch"></span><h3>Beacon activations</h3></div>
+      <div class="stat-row">
+        <span class="stat-value" data-value>0</span>
+        <span class="stat-delta" data-delta>none in 60s</span>
+      </div>
+      <svg class="spark" data-spark viewBox="0 0 240 34" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </article>
+  </section>
+
+  <!-- Map -->
+  <section class="card" data-section="map" aria-label="Live floor plan">
+    <div class="card-head">
+      <span class="swatch" style="--ch: var(--ch-ble)"></span>
+      <h2>Live floor plan</h2>
+      <span class="sub" id="venue-sub"></span>
+      <span class="spacer"></span>
+    </div>
+
+    <div class="map-stage" id="map-stage">
+      <svg id="floorplan" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMid meet"
+           role="img" aria-label="Top-down plan of the museum with the device's live position">
+        <defs>
+          <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse"
+                   patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="7" stroke="var(--border-strong)" stroke-width="1.6" opacity="0.5"/>
+          </pattern>
+        </defs>
+        <g id="map-camera">
+          <g id="layer-floor"></g>
+          <g id="layer-zones"></g>
+          <g id="layer-walk"></g>
+          <g id="layer-trail"></g>
+          <g id="layer-beacons"></g>
+          <g id="layer-device"></g>
+        </g>
+        <g id="layer-chrome"></g>
+      </svg>
+
+      <div class="map-ctl">
+        <button type="button" id="map-in"  title="Zoom in"  aria-label="Zoom in">+</button>
+        <button type="button" id="map-out" title="Zoom out" aria-label="Zoom out">&minus;</button>
+        <button type="button" id="map-follow" aria-pressed="true"
+                title="Follow device" aria-label="Follow device">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+          </svg>
+        </button>
+        <button type="button" id="map-trail" aria-pressed="true"
+                title="Show trail" aria-label="Show trail">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 18c4 0 3-8 7-8s3 8 7 8 4-6 4-6"/>
+          </svg>
+        </button>
+        <button type="button" id="map-reset" title="Reset view" aria-label="Reset view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 10V4h6M21 14v6h-6"/><path d="M20 9a8 8 0 0 0-14-3L3 9M4 15a8 8 0 0 0 14 3l3-3"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="map-readout" id="map-readout"></div>
+      <div class="map-stamp" id="map-stamp">no fix yet</div>
+    </div>
+  </section>
+
+  <!-- Context -->
+  <section class="card" data-section="ctx" aria-label="Current position">
+    <div class="now">
+      <span class="eyebrow" id="now-eyebrow">currently nearest</span>
+      <span class="title" id="now-title">—</span>
+      <span class="by" id="now-by">waiting for a beacon activation</span>
+    </div>
+    <dl class="facts">
+      <div class="fact"><dt>Signal</dt><dd id="fact-rssi">—</dd></div>
+      <div class="fact"><dt>Gallery</dt><dd id="fact-loc">—</dd></div>
+      <div class="fact"><dt>Visited</dt><dd id="fact-visited">0 / 0</dd></div>
+      <div class="fact"><dt>Last seen</dt><dd id="fact-seen">—</dd></div>
+    </dl>
+  </section>
+
+  <!-- Feed -->
+  <section class="card" data-section="feed" aria-label="Event log">
+    <div class="card-head">
+      <h2>Event log</h2>
+      <span class="spacer"></span>
+      <span class="badge" id="feed-count">0</span>
+    </div>
+    <div class="card-body">
+      <div class="stream" id="feed"></div>
+      <p class="empty" id="feed-empty">No MQTT traffic yet.</p>
+    </div>
+  </section>
+
+  <!-- Captures -->
+  <section class="card" data-section="media" aria-label="Camera captures">
+    <div class="card-head">
+      <span class="swatch" style="--ch: var(--ch-image)"></span>
+      <h2>Camera captures</h2>
+      <span class="spacer"></span>
+      <span class="badge" data-count="image">0</span>
+    </div>
+    <div class="card-body">
+      <div class="gallery" id="gallery"></div>
+      <p class="empty" id="gallery-empty">No frames captured yet.</p>
+    </div>
+  </section>
+
+  <!-- Transcripts -->
+  <section class="card" data-section="voicet" aria-label="Transcriptions">
+    <div class="card-head">
+      <span class="swatch" style="--ch: var(--ch-transcript)"></span>
+      <h2>Transcriptions</h2>
+      <span class="spacer"></span>
+      <span class="badge" data-count="transcript">0</span>
+    </div>
+    <div class="card-body">
+      <div class="stream" id="list-transcript"></div>
+      <p class="empty" id="transcript-empty">Nothing heard yet.</p>
+    </div>
+  </section>
+
+  <!-- Generated -->
+  <section class="card" data-section="voiceg" aria-label="Generated answers">
+    <div class="card-head">
+      <span class="swatch" style="--ch: var(--ch-generated)"></span>
+      <h2>Generated answers</h2>
+      <span class="spacer"></span>
+      <span class="badge" data-count="generated">0</span>
+    </div>
+    <div class="card-body">
+      <div class="stream" id="list-generated"></div>
+      <p class="empty" id="generated-empty">No answers generated yet.</p>
+    </div>
+  </section>
+
+  <!-- Beacons -->
+  <section class="card" data-section="beac" aria-label="Beacon registry">
+    <div class="card-head">
+      <span class="swatch" style="--ch: var(--ch-ble)"></span>
+      <h2>Beacons</h2>
+      <span class="sub">from seed_exhibits.json &amp; retained MQTT content</span>
+      <span class="spacer"></span>
+      <span class="badge" data-count="ble">0</span>
+    </div>
+    <div class="card-body flush">
+      <table class="grid">
+        <thead>
+          <tr>
+            <th>Exhibit</th><th>Location</th><th>UUID</th>
+            <th style="text-align:right">RSSI</th><th>Signal</th>
+            <th style="text-align:right">Hits</th><th style="text-align:right">Last</th>
+          </tr>
+        </thead>
+        <tbody id="beacon-rows"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<button class="lightbox" id="lightbox" hidden aria-label="Close image">
+  <img id="lightbox-img" alt="Camera capture, enlarged">
+</button>
+
+<script src="{{ url_for('static', filename='js/util.js') }}"></script>
+<script src="{{ url_for('static', filename='js/stats.js') }}"></script>
+<script src="{{ url_for('static', filename='js/feed.js') }}"></script>
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

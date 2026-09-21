@@ -1,0 +1,10 @@
+ts,worker,device_id,iter,warmup,interaction,request_id,response_type,e2e_ms,timed_out,service_ms,cache_lookup_ms,db_ms,stt_ms,embed_ms,search_ms,search_fallback_ms,llm_ms,resize_ms,vision_llm_ms,source,retrieval_scope,n_results,top_score,rate_limited,answer_chars,query_chars,audio_bytes,img_bytes_in,img_bytes_out,input,stage
+2026-06-27T05:22:52.843266+00:00,0,pi-bench-000,0,True,beacon,c72ab691c3d7481298015fbc5a17378e,tts,42.51,False,0.66,0.23,,,,,,,,,cache,,,,,,,,,,,
+2026-06-27T05:22:55.741310+00:00,0,pi-bench-000,0,True,voice,776fca006b524efd96b4e5baddfe5359,tts,2897.97,False,2890.64,,,,861.69,32.73,,,,,,scoped,1,0.4289,True,,24,,,,text,rag
+2026-06-27T05:22:56.742016+00:00,0,pi-bench-000,0,True,photo,a348c17f20a7463da1ff2e2efd9af327,tts,1000.58,False,989.42,,,,,,,,17.36,958.3,,,,,,89,,,13336,13068,,vision_error
+2026-06-27T05:22:56.784251+00:00,0,pi-bench-000,1,False,beacon,d2abb4135b324641a9703f56f95ca84d,tts,42.11,False,15.75,0.61,13.52,,,,,,,,db,,,,,,,,,,,
+2026-06-27T05:22:57.176379+00:00,0,pi-bench-000,1,False,voice,082bf87f3d71429890cd01757df1bc57,tts,392.03,False,385.87,,,,116.69,37.1,,,,,,scoped,1,0.3637,True,,24,,,,text,rag
+2026-06-27T05:22:59.507735+00:00,0,pi-bench-000,1,False,photo,92563ae100754d9b856e530c5a2bfa8e,tts,2331.18,False,2315.92,,,,,,,,2.95,2306.08,,,,,,89,,,13336,13068,,vision_error
+2026-06-27T05:22:59.551872+00:00,0,pi-bench-000,2,False,beacon,71f3f91a1742439ca90f7622e414cdd5,tts,43.93,False,8.92,0.66,6.98,,,,,,,,db,,,,,,,,,,,
+2026-06-27T05:22:59.648064+00:00,0,pi-bench-000,2,False,voice,b040f6c9c6e441e9a95de06ef20a9b31,tts,96.13,False,91.55,,,,58.09,20.29,12.12,,,,,none,0,,,,25,,,,text,
+2026-06-27T05:22:59.910395+00:00,0,pi-bench-000,2,False,photo,3c67d123708e4472911ef34aef8d6580,tts,262.24,False,255.25,,,,,,,,1.98,248.74,,,,,,89,,,13336,13068,,vision_error

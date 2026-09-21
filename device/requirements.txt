@@ -1,0 +1,36 @@
+# device/requirements.txt
+# Install on Raspberry Pi 4 (Python 3.11+)
+# pip install -r requirements.txt
+
+# MQTT
+paho-mqtt==2.1.0
+
+# BLE scanning (async, cross-platform)
+bleak==0.21.1
+
+# Speech-to-text now runs server-side (Gemini). The Pi only captures + ships
+# audio, so no Whisper/torch needed here.
+
+# Audio capture
+sounddevice==0.4.6
+soundfile==0.12.1
+numpy==1.26.4
+
+# Text-to-speech (offline)
+pyttsx3==2.90
+
+# Optional: better voice quality TTS (requires internet)
+# gTTS==2.5.1
+# pygame==2.5.2
+
+# Camera (Raspberry Pi — installed via apt on the Pi, not pip)
+# picamera2==0.3.19             # sudo apt install python3-picamera2
+Pillow==10.3.0
+
+# OpenCV fallback camera (non-Pi hardware)
+opencv-python-headless==4.9.0.80
+
+# Config + utils
+pyyaml==6.0.1
+python-dotenv==1.0.1
+loguru==0.7.2
